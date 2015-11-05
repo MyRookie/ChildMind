@@ -4,46 +4,45 @@ using System.Collections;
 public class PlayerControl : MonoBehaviour
 {
 	public Animator animator;
-
+	
 	private bool isSwimming;
 
-	public Texture2D[] runImgs;
-	
-	public Texture2D[] jumpImgs;
 	
 	public MeshRenderer mesh;
-
+	
 	private Rigidbody rigid;
-
-	private int swim_status;
-
-	private static int SWIM_UP = 1;
-
-	private static int SWIM_DOWN = 2;
-
-	private static int SWIM_FORWARD = 3;
-
-	private static int SWIM_BACKWORD = 4;
-
-	private static int SWIM_STOP = 0;
-
-	private static int STATE_MOVE = 1;
 	
-	private static int STATE_JUMP = 2;
+	public int swim_status;
 	
-	private static int STATE_STOP = 3;
+	public static int SWIM_UP = 1;
 	
-	private static int DIR_LEFT = 1;
+	public static int SWIM_DOWN = 2;
 	
-	private static int DIR_RIGHT = 2;
+	public static int SWIM_FORWARD = 3;
+	
+	public static int SWIM_BACKWORD = 4;
+	
+	public static int SWIM_STOP = 0;
+	
+	public static int STATE_MOVE = 1;
+	
+	public static int STATE_JUMP = 2;
+	
+	public static int STATE_STOP = 3;
+	
+	public static int DIR_LEFT = 1;
+	
+	public static int DIR_RIGHT = 2;
 	
 	//人物朝向(左右)
 	private int dir;
-
+	
 	private bool onGround;
 
+	float moveSpeed;
+	
 	//人物状态（行走、跳跃）
-	private int state;
+	public static int state;
 	
 	private int frames;
 	
@@ -55,12 +54,14 @@ public class PlayerControl : MonoBehaviour
 	
 	void Start ()
 	{
+			
+		animator = GetComponentInChildren<Animator> ();
 		isSwimming = false;
 		rigid = GetComponent<Rigidbody> ();
 		state = STATE_STOP;
 		dir = DIR_RIGHT;
 		rotation = Quaternion.Euler(0f,0f,0f);//new Quaternion (0, 0f, 0,0);
-//		Vector3 cp = new Vector3(-3.6f,0f,0f);
+		//		Vector3 cp = new Vector3(-3.6f,0f,0f);
 	}
 	
 	
@@ -70,13 +71,13 @@ public class PlayerControl : MonoBehaviour
 			LandControl ();
 		else
 			WaterControl ();
-
-
+		
+		
 	}
+	
+	void fix_position(){
 
-	void FIX(){
 		//fix the position of child(avoid rotate and move)
-//		transform.eulerAngles = new Vector3 (0f, 90f, 0f);
 		position = transform.position;
 		position.z = -0.43f;
 		transform.position = position;
@@ -86,13 +87,12 @@ public class PlayerControl : MonoBehaviour
 		if (dir == DIR_RIGHT)
 			transform.rotation = Quaternion.Euler (0f, 90f, 0f);
 	}
-
+	
 	void WaterControl(){
-
+		
 		//fix the position of the character
-		FIX ();
+		fix_position ();
 
-		//
 		if (swim_status == SWIM_STOP) {
 			if (Input.GetKey (KeyCode.UpArrow)) {
 				transform.Translate (0f, 0.03f, 0f);
@@ -113,20 +113,17 @@ public class PlayerControl : MonoBehaviour
 			swim_status = SWIM_STOP;
 			transform.Translate (0f, -0.01f, 0f);
 		}
-
+		
 	}
-
+	
 	void LandControl(){
-
+		
 		//fix the position of the character
-		FIX ();
+		fix_position ();
 
-
+		UpdateAnimation ();
+		
 		if (state == STATE_MOVE && !onGround) { //if the character is falling
-	//		animator.SetInteger("Status", 3);
-
-			Debug.Log(onGround);
-			Debug.Log("called");
 			return;
 		}
 		
@@ -134,13 +131,15 @@ public class PlayerControl : MonoBehaviour
 		//静止处理
 		if (state == STATE_STOP) {
 			//
+			moveSpeed = 0f;
 		} else if (state == STATE_JUMP) {
-			//			Debug.Log("JUMP");
+
+			moveSpeed = 0f;
 
 			frames++;
 			if (frames < 18) {
 				transform.Translate (0, 0.2f, 0f);
-					transform.Translate (0.05f * Vector3.forward);
+				transform.Translate (0.05f * Vector3.forward);
 			}
 			else{
 				transform.Translate (0.05f * Vector3.forward);	
@@ -151,10 +150,14 @@ public class PlayerControl : MonoBehaviour
 			}
 			//移动处理
 		} else if (state == STATE_MOVE) {
+			
+			
+			moveSpeed = 0.05f;
+			if(Input.GetKey (KeyCode.LeftShift))
+				moveSpeed = 0.07f;
+			
+			transform.Translate (moveSpeed * Vector3.forward);
 
-			transform.Translate (0.05f * Vector3.forward);
-
-			//			Debug.Log(frames);
 			if (Time.frameCount % 4 == 0) {
 				frames++;
 			}
@@ -164,13 +167,11 @@ public class PlayerControl : MonoBehaviour
 		}
 		
 		//按键控制
-		if (state == STATE_STOP) {
+		if (state == STATE_STOP || state == STATE_MOVE) {
 			if (Input.GetKey (KeyCode.Space)) {
-				//				Debug.Log("Jump");
 				state = STATE_JUMP;
 				frames = 0;
 			} else if (Input.GetKey (KeyCode.LeftArrow)) {
-				//				Debug.Log("Move");
 				state = STATE_MOVE;
 				frames = 0;
 				dir = DIR_LEFT;
@@ -182,10 +183,30 @@ public class PlayerControl : MonoBehaviour
 		}
 	}
 
+	void UpdateAnimation(){
+
+		float animationSpeed = moveSpeed * 200f;
+		animator.SetFloat ("Speed", animationSpeed);
+
+		if (state == STATE_MOVE) { //IN MOVING STATUS
+			if(!onGround){
+				animator.SetBool("Land",false);
+//				Debug.Log("Move to: "+transform.position);
+			}
+		}
+		if (state == STATE_JUMP) { //ON JUMP
+			animator.SetBool("Jumping",true);
+//			Debug.Log("Jumping at: "+transform.position);
+		}
+		else
+			animator.SetBool("Jumping",false);
+		//Debug.Log()
+	}
+
 	void OnCollisionExit(Collision obj){
 		onGround = false;
 	}
-
+	
 	void OnCollisionEnter(Collision obj){
 		onGround = true;
 	}
@@ -198,7 +219,6 @@ public class PlayerControl : MonoBehaviour
 			//modify the swimming status
 			isSwimming = true;
 			swim_status = SWIM_STOP;
-			Debug.Log ("Enter:" + obj.gameObject.tag);
 		}
 	}
 	
@@ -209,9 +229,8 @@ public class PlayerControl : MonoBehaviour
 			rigid.isKinematic = false;
 			//modify the swimming status
 			isSwimming = false;
-			Debug.Log ("Exit:" + obj.gameObject.tag);
 		}
 	}
-
+	
 	
 }

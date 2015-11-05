@@ -63,6 +63,12 @@ public class PetAI : MonoBehaviour {
 
 		//get move direction
 		ResetDirection();
+
+		if (PlayerControl.state == PlayerControl.STATE_JUMP) {
+			MoveTo (DIRECTION);
+			return;
+		}
+
 		//if target is in different position of heigt, Detect the environment around and check if it necessary to jump
 		if (Mathf.Abs( transform.position.y - TargetRigid.transform.position.y) > OffsetY) {
 			//detect nearby and judge if it is nessary to jump
