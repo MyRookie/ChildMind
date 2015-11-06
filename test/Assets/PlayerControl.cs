@@ -188,6 +188,8 @@ public class PlayerControl : MonoBehaviour
 		float animationSpeed = moveSpeed * 200f;
 		animator.SetFloat ("Speed", animationSpeed);
 
+
+
 		if (state == STATE_MOVE) { //IN MOVING STATUS
 			if(!onGround){
 				animator.SetBool("Land",false);
