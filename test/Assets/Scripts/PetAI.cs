@@ -10,7 +10,7 @@ public class PetAI : MonoBehaviour {
 	private bool onGround;
 	private bool isJumping;
 
-	private int OffsetY = 1;
+	private float OffsetY = 1f;
 	private const bool LEFT = true;
 	private  bool RIGHT = false;
 
@@ -21,7 +21,9 @@ public class PetAI : MonoBehaviour {
 
 	private Rigidbody Rigid;
 	private Rigidbody TargetRigid;
-	
+
+
+	private Vector3 position;
 	// Use this for initialization
 	void Start () {
 
@@ -33,6 +35,15 @@ public class PetAI : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+
+		position = transform.position;
+		position.z = -1.5f;
+		transform.position = position;
+		//transform.rotation = rotation;
+//		if(dir == DIR_LEFT)
+//			transform.rotation = Quaternion.Euler(0f,-90f,0f);
+//		if (dir == DIR_RIGHT)
+//			transform.rotation = Quaternion.Euler (0f, 90f, 0f);
 		//Debug.Log(Vector3.Distance(transform.position,TargetRigid.transform.position));
 		FollowTarget ();
 
@@ -55,6 +66,7 @@ public class PetAI : MonoBehaviour {
 			if (transform.position.y - TargetRigid.transform.position.y > OffsetY){
 				ResetDirection();
 				MoveTo(DIRECTION);
+				Debug.Log(1);
 			}
 			return;
 		}
@@ -65,7 +77,9 @@ public class PetAI : MonoBehaviour {
 		ResetDirection();
 
 		if (PlayerControl.state == PlayerControl.STATE_JUMP) {
-			MoveTo (DIRECTION);
+			Jump(DIRECTION);
+			Debug.Log(2);
+			//MoveTo (DIRECTION);
 			return;
 		}
 
@@ -124,21 +138,21 @@ public class PetAI : MonoBehaviour {
 	void Jump(bool DIR) {
 
 		timer++;
-		if (timer < 20) {
+		if (timer < 50) {
 			transform.Translate (0, 0.15f, 0f);
 			if (DIR == LEFT) {
-				transform.Translate (-0.05f, 0f, 0f);
+				transform.Translate (-0.5f, 0f, 0f);
 				//mesh.material.mainTexture = jumpImgs[9 + 4];
 			} else if (DIR == RIGHT) {
-				transform.Translate (0.05f, 0f, 0f);
+				transform.Translate (0.15f, 0f, 0f);
 				//mesh.material.mainTexture = jumpImgs[4];
 			}
 		}
 		else{
 			if (DIR == LEFT) {
-				transform.Translate (-0.05f, 0f, 0f);
+				transform.Translate (-0.15f, 0f, 0f);
 			} else if (DIR == RIGHT) {
-				transform.Translate (0.05f, 0f, 0f);
+				transform.Translate (0.15f, 0f, 0f);
 			}	
 		}
 	}

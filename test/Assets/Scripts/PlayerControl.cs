@@ -124,6 +124,8 @@ public class PlayerControl : MonoBehaviour
 		UpdateAnimation ();
 		
 		if (state == STATE_MOVE && !onGround) { //if the character is falling
+			//Debug.Log("no movement");
+			state = STATE_STOP;
 			return;
 		}
 		
@@ -139,10 +141,10 @@ public class PlayerControl : MonoBehaviour
 			frames++;
 			if (frames < 18) {
 				transform.Translate (0, 0.2f, 0f);
-				transform.Translate (0.05f * Vector3.forward);
+				transform.Translate (0.08f * Vector3.forward);
 			}
 			else{
-				transform.Translate (0.05f * Vector3.forward);	
+				transform.Translate (0.08f * Vector3.forward);	
 			}
 			
 			if (frames>36 && onGround) {
@@ -210,6 +212,10 @@ public class PlayerControl : MonoBehaviour
 	}
 	
 	void OnCollisionEnter(Collision obj){
+		onGround = true;
+	}
+
+	void OnCollisionStay(Collision obj){
 		onGround = true;
 	}
 	
